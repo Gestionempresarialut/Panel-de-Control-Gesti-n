@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel de control · Gestión Empresarial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+<link rel="icon" type="image/png" href="../img/logo-ut-cancun.png">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <img src="../img/logo-ut-cancun.png" alt="UT Cancún" id="brandLogo">
+    <div><b>Panel de control</b><small>Gestión Empresarial · UT Cancún</small></div>
+  </div>
+  <div class="top-actions">
+    <button class="status" id="statusBtn" type="button"><i></i><span>Cargando…</span></button>
+    <button class="btn ghost" id="previewBtn" type="button"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>Ver como</button>
+    <button class="btn navy" id="downloadBtn" type="button"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Descargar código <span class="count" id="pendingCount" hidden>0</span></button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="side" id="side" aria-label="Secciones del panel">
+    <button data-go="inicio" class="on"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio y guía</button>
+    <button data-go="vacantes"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Vacantes</button>
+    <button data-go="cuatri"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Estadías y cuatrimestre</button>
+    <button data-go="beneficios"><svg viewBox="0 0 24 24"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7S10 3 7.5 3a2.5 2.5 0 0 0 0 5H12m0-1s2-4 4.5-4a2.5 2.5 0 0 1 0 5H12"/></svg>Beneficios</button>
+    <button data-go="empresas"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h3a1 1 0 0 1 1 1v11M3 21h18M8 7h4M8 11h4M8 15h4"/></svg>Empresas vinculadas</button>
+    <button data-go="contactos"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Contactos</button>
+    <button data-go="apariencia"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 1 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3A4.7 4.7 0 0 0 22 10.7C22 5.9 17.5 2 12 2Z"/></svg>Apariencia</button>
+    <button data-go="publicar"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Descargar código</button>
+  </nav>
+
+  <main id="main">
+    <div class="loading" id="loading"><span class="spin"></span>Cargando la información del sitio…</div>
+    <section class="view" data-view="inicio" hidden></section>
+    <section class="view" data-view="vacantes" hidden></section>
+    <section class="view" data-view="cuatri" hidden></section>
+    <section class="view" data-view="beneficios" hidden></section>
+    <section class="view" data-view="empresas" hidden></section>
+    <section class="view" data-view="contactos" hidden></section>
+    <section class="view" data-view="apariencia" hidden></section>
+    <section class="view" data-view="publicar" hidden></section>
+  </main>
+</div>
+
+<!-- Formulario genérico -->
+<dialog class="modal" id="formDlg">
+  <form method="dialog" id="formEl">
+    <header><h2 id="formTitle">Editar</h2><button class="x" type="button" data-close aria-label="Cerrar">×</button></header>
+    <div class="modal-body" id="formBody"></div>
+    <footer><button class="btn ghost" type="button" data-close>Cancelar</button><button class="btn green" type="submit" id="formOk">Guardar</button></footer>
+  </form>
+</dialog>
+
+<!-- Confirmación -->
+<dialog class="modal small" id="confirmDlg">
+  <form method="dialog">
+    <header><h2 id="confirmTitle">¿Seguro?</h2></header>
+    <div class="modal-body"><p id="confirmText"></p></div>
+    <footer><button class="btn ghost" value="no">Cancelar</button><button class="btn danger" value="yes" id="confirmOk">Sí, continuar</button></footer>
+  </form>
+</dialog>
+
+<!-- Ver como -->
+<div class="preview" id="preview" hidden>
+  <div class="preview-bar">
+    <b>Ver como</b>
+    <span class="hint">Así se verá el sitio con tus cambios. Nada cambia en el servidor hasta que subas el ZIP.</span>
+    <span style="flex:1"></span>
+    <label class="sel">Sección
+      <select id="pvSection">
+        <option value="inicio">Inicio</option><option value="estadias">Estadías</option><option value="bolsa">Bolsa de trabajo</option>
+        <option value="egresados">Egresados</option><option value="empresas">Empresas vinculadas</option><option value="contacto">Contáctanos</option>
+      </select>
+    </label>
+    <div class="seg" id="pvDevice" role="group" aria-label="Tamaño de pantalla">
+      <button type="button" data-w="100%" class="on">Computadora</button><button type="button" data-w="820px">Tableta</button><button type="button" data-w="390px">Celular</button>
+    </div>
+    <button class="btn ghost" type="button" id="pvReload">Actualizar</button>
+    <button class="btn navy" type="button" id="pvClose">Cerrar</button>
+  </div>
+  <div class="preview-stage"><iframe id="pvFrame" title="Vista previa del sitio"></iframe></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="busy" id="busy" hidden><div><span class="spin"></span><p id="busyTxt">Trabajando…</p></div></div>
+
+<script src="config.js"></script>
+<script src="zip.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>
