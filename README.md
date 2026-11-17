@@ -4,7 +4,7 @@ Sitio web del Departamento de Gestión Empresarial de la Universidad Tecnológic
 
 ## 🧭 Panel de control (para el equipo)
 
-El panel permite actualizar el sitio **sin tocar código**: vacantes, cápsulas y encuestas de egresados, beneficios, agenda en PDF, fechas del cuatrimestre, formatos, empresas vinculadas, contactos, colores, tipografía y logotipo. No necesita cuentas ni contraseñas: todo se hace en el navegador y al final se descarga un ZIP.
+El panel permite actualizar el sitio **sin tocar código**: vacantes, beneficios, agenda en PDF, fechas del cuatrimestre, formatos, empresas vinculadas, contactos, colores, tipografía y logotipo. No necesita cuentas ni contraseñas: todo se hace en el navegador y al final se descarga un ZIP.
 
 - **Dirección del panel:** `https://gestionempresarialut.github.io/Panel-de-Control-Gesti-n/panel/`
 - También funciona desde el servidor de la universidad, en la carpeta `panel/` del sitio (el ZIP la incluye).

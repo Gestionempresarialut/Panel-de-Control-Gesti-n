@@ -134,11 +134,11 @@ async function openZip(file) {
 }
 
 /* ---------------- Lectura de datos ---------------- */
-const NAMES = ["AGENDA_URL", "FECHA_LISTA", "FORMATOS", "DIVS", "BENEFICIOS", "VACANTES", "TEL", "PEOPLE_GE", "PEOPLE_DIV", "STEPS", "CHECK", "ENCUESTAS_DATOS", "ENCUESTAS_SATISF", "CAPSULAS", "PLAYLIST_URL"];
+const NAMES = ["AGENDA_URL", "FECHA_LISTA", "FORMATOS", "DIVS", "BENEFICIOS", "VACANTES", "TEL", "PEOPLE_GE", "PEOPLE_DIV", "STEPS", "CHECK"];
 function parseDatos(text) {
   const fn = new Function(text + "\n;return {" + NAMES.map(n => `${n}: typeof ${n} !== "undefined" ? ${n} : undefined`).join(",") + "};");
   const d = fn();
-  d.FORMATOS ||= []; d.BENEFICIOS ||= []; d.VACANTES ||= []; d.PEOPLE_GE ||= []; d.PEOPLE_DIV ||= []; d.STEPS ||= []; d.CHECK ||= []; d.ENCUESTAS_DATOS ||= []; d.ENCUESTAS_SATISF ||= []; d.CAPSULAS ||= []; d.PLAYLIST_URL ||= "";
+  d.FORMATOS ||= []; d.BENEFICIOS ||= []; d.VACANTES ||= []; d.PEOPLE_GE ||= []; d.PEOPLE_DIV ||= []; d.STEPS ||= []; d.CHECK ||= [];
   return clone(d);
 }
 function parseEmpresas(text) { return clone(new Function(text + "\n;return EMPRESAS;")()); }
@@ -197,15 +197,6 @@ const STEPS = ${arr(d.STEPS)};
 
 /* Actividades del checklist de estadía. */
 const CHECK = ${arr(d.CHECK)};
-
-/* ================= EGRESADOS =================
-   Encuestas: t = título, sub = texto de apoyo, url = enlace.
-   Cápsulas: red = "facebook" o "youtube"; enlace = link del video; miniatura = imagen
-   (obligatoria en Facebook; YouTube la toma sola); nombre, cargo y frase son opcionales. */
-const ENCUESTAS_DATOS = ${arr(d.ENCUESTAS_DATOS)};
-const ENCUESTAS_SATISF = ${arr(d.ENCUESTAS_SATISF)};
-const CAPSULAS = ${arr(d.CAPSULAS)};
-const PLAYLIST_URL = ${J(d.PLAYLIST_URL || "")};   // Botón «Ver todos los egresados»
 `;
 }
 function genEmpresas() {
@@ -227,12 +218,12 @@ function addUpload(path, blob) {
   S.deletes.delete(path);
 }
 function referenced(path) {
-  const d = S.data; const all = [d.AGENDA_URL, ...d.FORMATOS.map(f => f.url), ...d.VACANTES.map(v => v.flyer), ...d.BENEFICIOS.map(b => b.flyer), ...d.CAPSULAS.map(c => c.miniatura)];
+  const d = S.data; const all = [d.AGENDA_URL, ...d.FORMATOS.map(f => f.url), ...d.VACANTES.map(v => v.flyer), ...d.BENEFICIOS.map(b => b.flyer)];
   return all.includes(path);
 }
 function dropFile(path) {
   if (!path || /^https?:/.test(path) || referenced(path)) return;
-  if (!/^(img\/vacantes|img\/beneficios|img\/videos|docs)\//.test(path)) return;
+  if (!/^(img\/vacantes|img\/beneficios|docs)\//.test(path)) return;
   const u = S.uploads[path];
   if (u) { URL.revokeObjectURL(u.url); delete S.uploads[path]; }
   if (S.manifest.includes(path)) S.deletes.add(path);
@@ -261,7 +252,6 @@ function fieldHTML(f, v) {
     case "textarea": return `<label class="field"${half}><span>${f.label}${req}</span><textarea id="${id}" placeholder="${esc(f.ph || "")}">${esc(v || "")}</textarea>${help}</label>`;
     case "lines": return `<label class="field"><span>${f.label}${req}</span><textarea id="${id}" placeholder="Escribe un elemento por renglón">${esc((v || []).join("\n"))}</textarea>${help}</label>`;
     case "divs": return `<div class="field"><span>${f.label}${req}</span><div class="chips" id="${id}">${Object.entries(S.data.DIVS).map(([k, d]) => `<label><input type="checkbox" value="${k}" ${[].concat(v || []).includes(k) ? "checked" : ""}>${esc(d.n)}</label>`).join("")}</div>${help}</div>`;
-    case "select": return `<label class="field"${half}><span>${f.label}${req}</span><select id="${id}">${f.options.map(([o, t]) => `<option value="${esc(o)}" ${String(o) === String(v ?? "") ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>${help}</label>`;
     case "check": return `<label class="check-line"><input type="checkbox" id="${id}" ${v ? "checked" : ""}> ${f.label}</label>`;
     case "image": case "file": {
       const isImg = f.type === "image";
@@ -555,88 +545,6 @@ RENDER.cuatri = el => {
   });
 };
 
-/* ================= EGRESADOS ================= */
-const ytIdOf = u => { const m = String(u || "").match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/); return m ? m[1] : (/^[\w-]{11}$/.test(String(u || "").trim()) ? String(u).trim() : ""); };
-const capThumb = c => c.miniatura ? srcOf(c.miniatura) : (c.red === "youtube" && ytIdOf(c.enlace) ? `https://i.ytimg.com/vi/${ytIdOf(c.enlace)}/hqdefault.jpg` : "");
-RENDER.egresados = el => {
-  const d = S.data, old = !S.index.includes("egrCapsulas");
-  el.innerHTML = head("Egresados", "Egresados", "Cápsulas en video de egresados, encuestas institucionales y el botón «Ver todos los egresados» de la sección Egresados.",
-    `<button class="btn green" id="cAdd">${ICON.plus}Agregar cápsula</button>`) +
-    (old ? `<div class="notice">⚠️ Este ZIP es de una versión anterior del sitio: los cambios de esta sección no se verán. Abre el ZIP más reciente con «Abrir un ZIP».</div>` : "") +
-    howto(["<b>Cápsula nueva:</b> haz clic en <b>Agregar cápsula</b> y pega el enlace del video. En Facebook usa <i>Compartir → Copiar enlace</i>; en YouTube, el enlace del video.",
-      "Si es de <b>Facebook</b>, sube una <b>miniatura</b> (una captura del video). Si es de <b>YouTube</b>, la miniatura se pone sola.",
-      "Escribe el <b>nombre</b>, el <b>cargo</b> y una <b>frase</b>. Con ↑ y ↓ eliges el orden en que aparecen.",
-      "En <b>Encuestas</b>, usa el lápiz para cambiar el título o el enlace cuando haya una encuesta nueva.",
-      "Revisa con <b>Ver como</b> → sección Egresados y descarga el código."]) +
-    `<div class="block"><h2>1. Cápsulas de egresados (${d.CAPSULAS.length})</h2><p class="sub">Videos de «Historias que inspiran». La primera de la lista aparece primero.</p>
-      ${d.CAPSULAS.length ? `<div class="cards" id="capList">${d.CAPSULAS.map((c, i) => `<article class="card">
-        <div class="thumb" style="aspect-ratio:16/9">${capThumb(c) ? `<img src="${esc(capThumb(c))}" alt="" loading="lazy" style="object-fit:cover">` : `<span class="none">Sin miniatura</span>`}</div>
-        <div class="info"><span class="tag">${c.red === "youtube" ? "YouTube" : "Facebook"}</span>${c.nombre ? `<h3>${esc(c.nombre)}</h3>` : ""}<p>${esc(c.cargo || "")}</p>${c.frase ? `<p><i>${esc(c.frase)}</i></p>` : ""}</div>
-        <div class="acts"><button class="btn sm ghost" data-a="edit" data-i="${i}">${ICON.edit}Editar</button><button class="btn sm ghost" data-a="up" data-i="${i}" title="Subir">${ICON.up}</button><button class="btn sm ghost" data-a="down" data-i="${i}" title="Bajar">${ICON.down}</button><button class="btn sm ghost" data-a="del" data-i="${i}" style="color:var(--danger)">${ICON.del}Eliminar</button></div>
-      </article>`).join("")}</div>` : `<div class="empty">No hay cápsulas. Agrega la primera.</div>`}
-      <label class="field" style="margin-top:16px;max-width:620px"><span>Enlace del botón «Ver todos los egresados»</span><input type="text" id="playlist" value="${esc(d.PLAYLIST_URL)}" placeholder="https://www.youtube.com/playlist?list=…"><small>La lista de reproducción de YouTube con todas las cápsulas.</small></label></div>
-    <div class="block"><h2>2. Registro y actualización de datos</h2><p class="sub">Encuestas del apartado «Tus datos».</p>
-      <div class="scroll"><table class="tbl"><thead><tr><th>Encuesta</th><th>Texto de apoyo</th><th>Enlace</th><th></th></tr></thead><tbody id="encDatos"></tbody></table></div>
-      <button class="btn ghost" data-add="ENCUESTAS_DATOS" style="margin-top:12px">${ICON.plus}Agregar encuesta</button></div>
-    <div class="block"><h2>3. Encuestas de satisfacción</h2><p class="sub">Encuestas del apartado «Tu opinión cuenta».</p>
-      <div class="scroll"><table class="tbl"><thead><tr><th>Encuesta</th><th>Texto de apoyo</th><th>Enlace</th><th></th></tr></thead><tbody id="encSatisf"></tbody></table></div>
-      <button class="btn ghost" data-add="ENCUESTAS_SATISF" style="margin-top:12px">${ICON.plus}Agregar encuesta</button></div>
-    <div class="block"><h2>4. Beneficios para la comunidad UT</h2><p class="sub">Los carteles de beneficios también aparecen en Egresados. Se editan en su propia sección.</p><button class="btn ghost" data-goto="beneficios">Ir a Beneficios</button></div>`;
-
-  // Cápsulas
-  const capForm = i => openForm({
-    title: i == null ? "Nueva cápsula de egresado" : "Editar cápsula",
-    fields: [
-      { k: "red", type: "select", label: "¿Dónde está el video?", options: [["facebook", "Facebook"], ["youtube", "YouTube"]], req: true, half: true },
-      { k: "enlace", label: "Enlace del video", req: true, half: true, ph: "https://…" },
-      { k: "miniatura", type: "image", label: "Miniatura", help: "Obligatoria si el video es de Facebook: sube una captura del video, de preferencia horizontal. En YouTube se pone sola." },
-      { k: "nombre", label: "Nombre del egresado", half: true, ph: "Nombre Apellido" },
-      { k: "cargo", label: "Cargo o carrera", half: true, ph: "Puesto y empresa" },
-      { k: "frase", label: "Frase o título del video", ph: "Una frase corta del video" }],
-    values: i == null ? { red: "facebook" } : d.CAPSULAS[i],
-    onSave: (out, files) => {
-      if (/youtu\.?be/.test(out.enlace)) out.red = "youtube"; else if (/facebook\.com|fb\.watch/.test(out.enlace)) out.red = "facebook";
-      if (out.red === "youtube" && !ytIdOf(out.enlace)) { $("#formErr").textContent = "No reconozco ese enlace de YouTube. Cópialo desde el botón Compartir del video."; return false; }
-      if (out.red === "facebook" && !out.miniatura && !files.miniatura) { $("#formErr").textContent = "Los videos de Facebook necesitan una miniatura."; return false; }
-      const prev = i == null ? null : d.CAPSULAS[i];
-      if (files.miniatura) { const p = `img/videos/${slug(out.nombre || out.frase || "capsula")}-${uid()}.jpg`; addUpload(p, files.miniatura.blob); out.miniatura = p; }
-      const c = clean({ red: out.red, enlace: out.enlace, miniatura: out.miniatura, nombre: out.nombre, cargo: out.cargo, frase: out.frase });
-      if (i == null) d.CAPSULAS.unshift(c); else d.CAPSULAS[i] = c;
-      if (prev?.miniatura && prev.miniatura !== c.miniatura) dropFile(prev.miniatura);
-      change("js/datos.js", "cap-" + uid(), `Cápsula ${i == null ? "agregada" : "editada"}: ${c.nombre || c.frase || c.enlace}`); RENDER.egresados(el);
-    }
-  });
-  $("#cAdd").onclick = () => capForm(null);
-  $("#capList")?.addEventListener("click", async e => {
-    const b = e.target.closest("[data-a]"); if (!b) return; const i = +b.dataset.i, c = d.CAPSULAS[i];
-    if (b.dataset.a === "edit") capForm(i);
-    if ((b.dataset.a === "up" || b.dataset.a === "down") && moveIn(d.CAPSULAS, i, b.dataset.a === "up" ? -1 : 1)) { change("js/datos.js", "cap-orden", "Orden de cápsulas cambiado"); RENDER.egresados(el); }
-    if (b.dataset.a === "del" && await confirmBox("¿Eliminar cápsula?", `Se quitará el video de <b>${esc(c.nombre || c.frase || "este egresado")}</b> de la página.`, "Eliminar")) {
-      d.CAPSULAS.splice(i, 1); dropFile(c.miniatura); change("js/datos.js", "cap-del-" + uid(), `Cápsula eliminada: ${c.nombre || c.frase || c.enlace}`); RENDER.egresados(el);
-    }
-  });
-  $("#playlist").onchange = e => { d.PLAYLIST_URL = e.target.value.trim(); change("js/datos.js", "playlist", "Enlace de «Ver todos los egresados»"); };
-
-  // Encuestas
-  const LBL = { ENCUESTAS_DATOS: "#encDatos", ENCUESTAS_SATISF: "#encSatisf" };
-  const draw = key => { $(LBL[key]).innerHTML = d[key].map((f, i) => `<tr><td><b>${esc(f.t)}</b></td><td class="muted">${esc(f.sub || "")}</td><td style="white-space:nowrap"><a href="${esc(f.url)}" target="_blank" rel="noopener">🔗 Abrir</a></td>
-    <td class="acts"><button class="btn sm ghost" data-k="${key}" data-a="edit" data-i="${i}">${ICON.edit}</button><button class="btn sm ghost" data-k="${key}" data-a="up" data-i="${i}">${ICON.up}</button><button class="btn sm ghost" data-k="${key}" data-a="down" data-i="${i}">${ICON.down}</button><button class="btn sm ghost" data-k="${key}" data-a="del" data-i="${i}" style="color:var(--danger)">${ICON.del}</button></td></tr>`).join("") || `<tr><td colspan="4" class="muted">Sin encuestas.</td></tr>`; };
-  Object.keys(LBL).forEach(draw);
-  const encForm = (key, i) => openForm({
-    title: i == null ? "Nueva encuesta" : "Editar encuesta",
-    fields: [{ k: "t", label: "Nombre de la encuesta", req: true }, { k: "sub", label: "Texto de apoyo", ph: "Para personas egresadas" }, { k: "url", label: "Enlace de la encuesta", req: true, ph: "http://…" }],
-    values: i == null ? {} : d[key][i],
-    onSave: out => { const f = clean({ t: out.t, sub: out.sub, url: out.url }); if (i == null) d[key].push(f); else d[key][i] = f; change("js/datos.js", "enc-" + uid(), `Encuesta ${i == null ? "agregada" : "editada"}: ${f.t}`); draw(key); }
-  });
-  el.onclick = async e => {
-    const add = e.target.closest("[data-add]"); if (add) return encForm(add.dataset.add, null);
-    const b = e.target.closest("[data-k][data-a]"); if (!b) return; const key = b.dataset.k, i = +b.dataset.i, f = d[key][i];
-    if (b.dataset.a === "edit") encForm(key, i);
-    if ((b.dataset.a === "up" || b.dataset.a === "down") && moveIn(d[key], i, b.dataset.a === "up" ? -1 : 1)) { change("js/datos.js", "enc-orden-" + key, "Orden de encuestas cambiado"); draw(key); }
-    if (b.dataset.a === "del" && await confirmBox("¿Quitar encuesta?", `Se quitará <b>${esc(f.t)}</b>.`, "Quitar")) { d[key].splice(i, 1); change("js/datos.js", "enc-del-" + uid(), `Encuesta quitada: ${f.t}`); draw(key); }
-  };
-};
-
 /* ================= EMPRESAS ================= */
 let empQ = "", empShow = 50;
 RENDER.empresas = el => {
@@ -700,7 +608,7 @@ RENDER.contactos = el => {
     $("#divRows").innerHTML = d.PEOPLE_DIV.map((p, i) => `<tr><td><b>${esc(p.role)}</b></td><td>${inp("PEOPLE_DIV", i, "name", p.name)}</td><td>${inp("PEOPLE_DIV", i, "mail", p.mail, "email")}</td></tr>`).join("");
   };
   draw();
-  el.onchange = e => {
+  el.addEventListener("change", e => {
     const t = e.target;
     if (t.id === "tel") { d.TEL = t.value.replace(/\s/g, ""); change("js/datos.js", "tel", "Teléfono del conmutador"); return; }
     if (!t.dataset.l) return;
@@ -708,12 +616,12 @@ RENDER.contactos = el => {
     if (t.type === "checkbox") { if (t.checked) p.feature = true; else delete p.feature; }
     else p[t.dataset.k] = t.value.trim();
     change("js/datos.js", `contacto-${t.dataset.l}-${t.dataset.i}`, `Contacto actualizado: ${p.name || p.role}`);
-  };
-  el.onclick = async e => {
+  });
+  el.addEventListener("click", async e => {
     const b = e.target.closest("[data-a]"); if (!b || !e.target.closest("#geRows")) return; const i = +b.dataset.i, p = d.PEOPLE_GE[i];
     if ((b.dataset.a === "up" || b.dataset.a === "down") && moveIn(d.PEOPLE_GE, i, b.dataset.a === "up" ? -1 : 1)) { change("js/datos.js", "ge-orden", "Orden de contactos cambiado"); draw(); }
     if (b.dataset.a === "del" && await confirmBox("¿Quitar contacto?", `Se quitará a <b>${esc(p.name)}</b>.`, "Quitar")) { d.PEOPLE_GE.splice(i, 1); change("js/datos.js", "ge-del-" + uid(), `Contacto quitado: ${p.name}`); draw(); }
-  };
+  });
   $("#geAdd").onclick = () => openForm({
     title: "Nueva persona", fields: [{ k: "role", label: "Área", req: true, ph: "Estadías" }, { k: "name", label: "Nombre con título", req: true, ph: "Lic. Nombre Apellido" }, { k: "mail", type: "email", label: "Correo", half: true }, { k: "ext", label: "Extensión", half: true }, { k: "feature", type: "check", label: "Destacado" }],
     onSave: out => { d.PEOPLE_GE.push(clean(out)); change("js/datos.js", "ge-add-" + uid(), `Contacto agregado: ${out.name}`); draw(); }

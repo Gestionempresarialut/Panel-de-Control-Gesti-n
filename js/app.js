@@ -369,25 +369,3 @@ document.addEventListener("click",e=>{
     const wide=r>1.1; card.classList.toggle("wide", wide); if(wide) card.style.setProperty("--ar", r.toFixed(4)); };
   box.querySelectorAll(".flyer img").forEach(img=>{ if(img.complete) fit(img); else img.addEventListener("load",()=>fit(img),{once:true}); });
 })();
-
-/* ================= EGRESADOS ================= */
-(function egresados(){
-  const arrow='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>';
-  const forms=(id,list)=>{const box=document.getElementById(id); if(!box||!Array.isArray(list)) return;
-    box.innerHTML=list.map(f=>`<a class="form-link" href="${esc(f.url)}" target="_blank" rel="noopener"><span>${esc(f.t)}<small>${esc(f.sub||"")}</small></span>${arrow}</a>`).join("");};
-  if(typeof ENCUESTAS_DATOS!=="undefined") forms("egrDatos",ENCUESTAS_DATOS);
-  if(typeof ENCUESTAS_SATISF!=="undefined") forms("egrSatisf",ENCUESTAS_SATISF);
-  const pl=document.getElementById("egrPlaylist"); if(pl&&typeof PLAYLIST_URL!=="undefined"&&PLAYLIST_URL) pl.href=PLAYLIST_URL;
-  const box=document.getElementById("egrCapsulas"); if(!box||typeof CAPSULAS==="undefined") return;
-  const ytId=u=>{const m=String(u||"").match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/); return m?m[1]:(/^[\w-]{11}$/.test(u)?u:"");};
-  const play='<span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>';
-  box.innerHTML=CAPSULAS.map((c,i)=>{
-    const label=esc((c.nombre?c.nombre+": ":"")+(c.frase||""));
-    const txt=(c.nombre?`<p><strong>${esc(c.nombre)}</strong>${c.cargo?", "+esc(c.cargo):""}</p>`:"")+(c.frase?`<p${c.nombre?' class="video-quote"':""}>${esc(c.frase)}</p>`:"");
-    let frame;
-    if(c.red==="youtube"){const id=ytId(c.enlace);
-      frame=`<button class="video-frame" type="button" data-yt="${id}" aria-label="Reproducir video: ${label}"><img src="${c.miniatura?esc(c.miniatura):`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">${play}</button>`;}
-    else frame=`<a class="video-frame fb" href="${esc(c.enlace)}" target="_blank" rel="noopener" aria-label="Ver en Facebook el video de ${label}"><img src="${esc(c.miniatura||"")}" alt="" loading="lazy">${play}</a>`;
-    return `<article class="video rise" style="--i:${8+i}">${frame}${txt}</article>`;
-  }).join("");
-})();

@@ -99,26 +99,3 @@ const STEPS = [
   {n:"10", t:"Entrega final en Gestión Empresarial", s:"2027-04-01", e:"2027-04-30", w:"Abril, según calendario", d:"Carta de liberación (original y copia) y 2 fotos tamaño infantil. Consulta tu día y hora en el Facebook de Estadía Profesional.", link:["https://www.facebook.com/EstadiaProfesionalUTCancun/","Ver Facebook de Estadía Profesional"]}
 ];
 const CHECK = ["Asistí a la plática de inducción","Elegí empresa vinculada","Descargué la carta de presentación","Registro de estadía capturado","Carta de presentación entregada (original y copia)","Encuestas de egresados respondidas","Documentos entregados en mi división","Evaluación académica realizada","Carta de liberación revisada","2 fotos tamaño infantil listas","Entrega final en Gestión Empresarial"];
-
-/* ================= EGRESADOS =================
-   Encuestas: t = título, sub = texto de apoyo, url = enlace.
-   Cápsulas: red = "facebook" o "youtube"; enlace = link del video (en YouTube basta el link);
-   miniatura = imagen (obligatoria en Facebook; YouTube la toma sola); nombre, cargo y frase son opcionales. */
-const ENCUESTAS_DATOS = [
-  {"t":"Actualización de datos de egresados – UT Cancún","sub":"Para personas egresadas","url":"http://201.134.180.251:8080/encuestas/index.php/574392?lang=es-MX"},
-  {"t":"Registro y Actualización de Datos de Egresados, periodo de Estadías","sub":"Durante tu estadía · paso 6 de la agenda","url":"http://201.134.180.251:8080/encuestas/index.php/911994?lang=es-MX"}
-];
-const ENCUESTAS_SATISF = [
-  {"t":"Encuesta de Satisfacción de Egresados (as) TSU","sub":"Técnico Superior Universitario","url":"http://201.134.180.251:8080/encuestas/index.php/381536?lang=es-MX"},
-  {"t":"Encuesta de Satisfacción de Egresados (as) de Licenciaturas e Ingenierías","sub":"Licenciatura e Ingeniería","url":"http://201.134.180.251:8080/encuestas/index.php/555862?lang=es-MX"},
-  {"t":"Encuesta de Satisfacción del Servicio de Seguimiento de Egresados y Apoyo de Bolsa de Trabajo","sub":"Sobre la atención que recibiste","url":"http://201.134.180.251:8080/encuestas/index.php/973715?lang=es-MX"}
-];
-const CAPSULAS = [
-  {"red":"facebook","enlace":"https://www.facebook.com/share/v/1CMJvxuGYy/","miniatura":"img/videos/fb-egresado-1.jpg","nombre":"Ariel Valtierra","cargo":"Director Técnico en la Secretaría de Turismo de Quintana Roo","frase":"“Para mí, la UT son los cimientos de lo que ha sido mi vida profesional”"},
-  {"red":"facebook","enlace":"https://www.facebook.com/share/v/1DTuKuk3UY/","miniatura":"img/videos/fb-egresado-2.jpg","nombre":"Mar Ríos","cargo":"Chef Ejecutiva del Centro Comunitario Integral para las Juventudes","frase":"Nunca dejen de luchar por sus sueños: el consejo de nuestra egresada"},
-  {"red":"facebook","enlace":"https://www.facebook.com/share/v/1Jnktr1sG4/","miniatura":"img/videos/fb-egresado-3.jpg","nombre":"Isaac Rodríguez Flores","cargo":"Coordinador de Vinculación Interinstitucional y con Organizaciones no Gubernamentales para la CDHEQROO","frase":"De la UT Cancún al servicio de la comunidad"},
-  {"red":"youtube","enlace":"https://www.youtube.com/watch?v=4UP5FJj1fxQ","frase":"¡Conoce a Edgar Ulises Hernández Cruz, egresado de la Licenciatura en Gestión y Desarrollo Turístico"},
-  {"red":"youtube","enlace":"https://www.youtube.com/watch?v=J4GRjCkdXO8","frase":"¡Conoce a Rocío Arceo, egresada de la generación 97-99 del TSU en informática!"},
-  {"red":"youtube","enlace":"https://www.youtube.com/watch?v=BqtEBbTAdPw","frase":"¡Conoce a Nayeli Vargas, egresada de la Licenciatura en Gestión y desarrollo turístico!"}
-];
-const PLAYLIST_URL = "https://www.youtube.com/playlist?list=PLQZ0N-XiuCKG64-ivedSlefxiGqpRBtNX";   // Botón «Ver todos los egresados»
